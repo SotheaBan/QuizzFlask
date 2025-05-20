@@ -1,10 +1,11 @@
-from flask import Flask,render_template,redirect,url_for,flash
+from flask import Flask,render_template,redirect,url_for,flash,abort,request
 from extensions import db, login_manager, csrf
 from models import User
-from forms import RegistrationForm,LoginForm
+from forms import RegistrationForm,LoginForm,EditProfileForm
 from werkzeug.security import generate_password_hash,check_password_hash
-from flask_login import login_user
-
+from werkzeug.utils import secure_filename
+from flask_login import login_user,login_required, current_user,LoginManager,logout_user
+import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hello123'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost/quizz'
@@ -15,9 +16,14 @@ db.init_app(app)
 login_manager.init_app(app)
 csrf.init_app(app)
 
+
 # Create tables
 with app.app_context():
     db.create_all()
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -26,7 +32,6 @@ def load_user(user_id):
 @app.route('/')
 def home():
     return render_template('pages/homepage.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -37,12 +42,13 @@ def login():
 
         if user and check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            flash("✅ Logged in successfully!", "success")
+            flash(" Logged in successfully!", "success")
             return redirect(url_for('home')) 
         else:
-            flash("❌ Invalid email or password", "danger")
+            flash(" Invalid email or password", "danger")
 
     return render_template('authentication/login.html', form=form)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -65,13 +71,46 @@ def register():
 
         # 4. Flash + redirect
         flash("Account created successfully! You can now log in.", "success")
-        return redirect(url_for(''))  
+        return redirect(url_for('home'))  
 
     return render_template('authentication/register.html', form=form)
 
+@app.route('/profile/<int:user_id>')
+
+@login_required
+def profile(user_id):
+    
+    form = EditProfileForm(obj=user_id) 
+    return render_template('pages/profile.html', user=user_id,form=form)
+
+@app.route('/profile/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.id != current_user.id:
+        abort(403)
+
+    form = EditProfileForm(obj=user)  
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.avatar_url = form.avatar_url.data
+        db.session.commit()
+        flash("✅ Profile updated successfully!", "success")
+        return redirect(url_for('profile', user_id=user.id))
+
+    form = EditProfileForm(obj=current_user)
+    return render_template('pages/profile.html', user=current_user, form=form)
 
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()  # Removes user session
+    flash("You have been logged out.", "info")
+    return redirect(url_for('home'))
 
 
 

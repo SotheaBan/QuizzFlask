@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Profile - DevOverflow</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card-custom {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+    .tag {
+      background-color: #e8ebf8;
+      color: #1A32D4;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-right: 0.3rem;
+    }
+    .profile-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 100px;
+      background-color: #ddd;
+      display: inline-block;
+      background-image: url('https://via.placeholder.com/100');
+      background-size: cover;
+      background-position: center;
+    }
+    .badge-outline {
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      margin-right: 5px;
+    }
+    .vote-count {
+      font-weight: bold;
+      color: #1A32D4;
+    }
+    .reputation-box {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+
+    <div>
+        <a href="{{ url_for('home') }}" class="btn btn-primary width- mb-4" style="width: 50px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"/>
+            </svg>
+        </a>
+    </div>
+    
+    <!-- Profile Header Row -->
+    <div class="row mb-4">
+      <!-- Profile Info Left -->
+      <div class="col-md-6 d-flex align-items-center gap-3">
+        <div class="profile-img" style="background-image: url('{{ current_user.avatar }}');">
+        </div>
+        <div>
+            <h4 class="fw-bold mb-0">{{current_user.username}}</h4>
+            <div class="text-muted">{{ current_user.email.split('@')[0] }}</div>
+            <div class="text-muted small">{{ current_user.created.strftime('%Y-%m-%d') }}</div>
+       
+            <!-- Trigger Button -->
+            <button type="button" class="btn btn-outline-secondary mt-3" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                Edit Profile
+            </button>
+            <button type="button" class="btn btn-outline-secondary mt-3 " data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <a href="{{ url_for('logout') }}"  class="underline-none">Logout</a>
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('edit_profile', user_id=current_user.id) }}">
+                    {{ form.hidden_tag() }}
+            
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+            
+                    <div class="modal-body">
+                        <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control") }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        </div>
+            
+                        <div class="mb-3">
+                        {{ form.avatar_url.label(class="form-label") }}
+                        {{ form.avatar_url(class="form-control") }}
+                        {% for error in form.avatar_url.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        </div>
+                    </div>
+            
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                    </form>
+                </div>
+                </div>
+            </div>
+    
+        </div>
+      </div>
+
+      <!-- Reputation Right -->
+      <div class="col-md-6 reputation-box d-flex flex-column align-items-end justify-content-center">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span style="font-size: 1.2rem;">🏆</span>
+          <span class="fw-bold fs-5 text-dark">24,783</span>
+        </div>
+        <div class="text-muted mb-2" style="font-size: 0.9rem;">reputation</div>
+        <div>
+          <span class="badge bg-warning text-dark badge-outline">8 gold</span>
+          <span class="badge bg-secondary text-light badge-outline">42 silver</span>
+          <span class="badge bg-danger badge-outline">96 bronze</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+      <!-- Left Column: About Me + Activity Summary -->
+      <div class="col-md-4">
+        <div class="card-custom">
+          <h6 class="fw-bold mb-2">About Me</h6>
+          <p class="text-muted mb-0">
+            Full-stack developer specializing in React and Node.js. I enjoy solving complex problems and contributing to open-source projects.
+          </p>
+        </div>
+
+        <div class="card-custom">
+          <h6 class="fw-bold mb-3">Activity Summary</h6>
+          <div class="d-flex justify-content-between">
+            <span>Questions</span><span>47</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Answers</span><span>328</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>People reached</span><span>~1.4m</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Top Questions in Single Card -->
+      <div class="col-md-8">
+        <div class="card-custom">
+          <h6 class="fw-bold mb-3">Top Questions</h6>
+          <p class="text-muted small">Highest voted questions asked by Katherine</p>
+
+          <!-- Question 1 -->
+          <div class="mb-4">
+            <a href="#" class="fw-semibold text-decoration-none text-primary">
+              How to properly implement useEffect cleanup in React?
+            </a>
+            <div class="mt-2 mb-2">
+              <span class="tag">react</span>
+              <span class="tag">hooks</span>
+              <span class="tag">javascript</span>
+            </div>
+            <div class="text-muted small">
+              <span class="vote-count">124</span> votes • 8 answers • 12k views
+            </div>
+          </div>
+
+          <!-- Question 2 -->
+          <div class="mb-4">
+            <a href="#" class="fw-semibold text-decoration-none text-primary">
+              Understanding TypeScript generics with React components
+            </a>
+            <div class="mt-2 mb-2">
+              <span class="tag">typescript</span>
+              <span class="tag">react</span>
+              <span class="tag">generics</span>
+            </div>
+            <div class="text-muted small">
+              <span class="vote-count">98</span> votes • 5 answers • 8.5k views
+            </div>
+          </div>
+
+          <!-- Question 3 -->
+          <div class="mb-2">
+            <a href="#" class="fw-semibold text-decoration-none text-primary">
+              Best practices for handling API errors in Next.js
+            </a>
+            <div class="mt-2 mb-2">
+              <span class="tag">next.js</span>
+              <span class="tag">api</span>
+              <span class="tag">error-handling</span>
+            </div>
+            <div class="text-muted small">
+              <span class="vote-count">87</span> votes • 6 answers • 7.2k views
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+
+  
+</body>
+</html>
