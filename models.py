@@ -8,7 +8,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False) 
-    avatar = db.Column(db.String(300), default='default.png')  # path to image
+    avatar = db.Column(db.String(300), default='uploads/avatars/default.png')
     created = db.Column(db.DateTime, default=datetime.utcnow)
 
     questions = db.relationship('Question', backref='author', lazy=True)

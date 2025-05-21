@@ -1,4 +1,4 @@
-from flask import Flask,render_template,redirect,url_for,flash,abort,request
+from flask import Flask,render_template,redirect,url_for,flash,abort,request,current_app
 from extensions import db, login_manager, csrf
 from models import User
 from forms import RegistrationForm,LoginForm,EditProfileForm
@@ -76,32 +76,44 @@ def register():
     return render_template('authentication/register.html', form=form)
 
 @app.route('/profile/<int:user_id>')
-
 @login_required
 def profile(user_id):
-    
+    user = User.query.get_or_404(user_id) 
     form = EditProfileForm(obj=user_id) 
-    return render_template('pages/profile.html', user=user_id,form=form)
+    return render_template('pages/profile.html', user=user,form=form)
+
+import os
+from werkzeug.utils import secure_filename
 
 @app.route('/profile/<int:user_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_profile(user_id):
     user = User.query.get_or_404(user_id)
-
     if user.id != current_user.id:
         abort(403)
 
-    form = EditProfileForm(obj=user)  
+    form = EditProfileForm(obj=user)
 
     if form.validate_on_submit():
         user.username = form.username.data
-        user.avatar_url = form.avatar_url.data
+
+        # Handle avatar upload
+        if form.avatar.data:
+            file = form.avatar.data
+            filename = secure_filename(file.filename)
+            avatar_folder = os.path.join('static', 'uploads', 'avatars')
+            os.makedirs(avatar_folder, exist_ok=True)
+            avatar_path = os.path.join(avatar_folder, filename)
+            file.save(avatar_path)
+
+            # Save path to user record
+            user.avatar_url = f"/static/uploads/avatars/{filename}"
+
         db.session.commit()
-        flash("✅ Profile updated successfully!", "success")
+        flash("✅ Profile updated!", "success")
         return redirect(url_for('profile', user_id=user.id))
 
-    form = EditProfileForm(obj=current_user)
-    return render_template('pages/profile.html', user=current_user, form=form)
+    return render_template('pages/profile.html', user=user, form=form)
 
 
 

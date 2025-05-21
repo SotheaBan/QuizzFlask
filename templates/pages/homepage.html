@@ -69,7 +69,7 @@
           {% if current_user.is_authenticated %}
             <!-- Logged in: show profile image or icon -->
             <a href="{{ url_for('profile', user_id=current_user.id)}}" class="btn btn-outline-primary">
-              <img src="https://via.placeholder.com/30" class="rounded-circle" alt="Profile" />
+              <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" class="rounded-circle mb-3" width="100" />
             </a>
           {% else %}
             <!-- Not logged in: show login/signup -->
