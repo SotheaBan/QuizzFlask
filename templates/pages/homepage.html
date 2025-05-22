@@ -57,6 +57,69 @@
     .btn-dark:hover {
       background-color: #1527a6;
     }
+  
+    .profile-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease; /* Smooth hover effect */
+  }
+
+  .profile-img:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+  }
+
+  .question-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 16px;
+  }
+
+  .hover-border:hover {
+    border-color: #1A32D4 !important;
+    box-shadow: 0 6px 16px rgba(26, 50, 212, 0.06);
+  }
+
+  .sidebar-count {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #1A32D4;
+  }
+
+  .sidebar-label {
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  .tag {
+    background-color: #e8ebf8;
+    color: #1A32D4;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    margin-right: 6px;
+  }
+
+  @media (max-width: 576px) {
+    .sidebar-count {
+    font-size: 0.95rem;
+  }
+  .sidebar-label {
+    font-size: 0.7rem;
+  }
+
+    .tag {
+      font-size: 0.65rem;
+      padding: 3px 8px;
+    }
+
+    .question-card {
+      padding: 1rem;
+    }
+  }
+
   </style>
 </head>
 <body>
@@ -68,9 +131,12 @@
         <div class="d-flex gap-2">
           {% if current_user.is_authenticated %}
             <!-- Logged in: show profile image or icon -->
-            <a href="{{ url_for('profile', user_id=current_user.id)}}" class="btn btn-outline-primary">
-              <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" class="rounded-circle mb-3" width="100" />
-            </a>
+            <div>
+              <a href="{{ url_for('profile', user_id=current_user.id) }}">
+                <img src="{{ url_for('static', filename=current_user.avatar or 'uploads/avatars/default.png') }}" 
+                     class="profile-img" alt="Profile Picture">
+              </a>
+            </div>
           {% else %}
             <!-- Not logged in: show login/signup -->
             <a href="{{ url_for('login') }}" class="btn btn-outline-dark">Log in</a>
@@ -82,7 +148,7 @@
     <!-- Search Bar -->
     <div class="mb-4 d-flex justify-content-between align-items-center ">
       <input type="text" class="form-control rounded-sm shadow-sm px-4 p-3" placeholder="🔍 Search questions..." />
-      <button class="btn btn-primary ms-2">Ask Question</button>
+      <a href="{{ url_for('post_question') }}" class="btn btn-primary ms-2">Ask Question</a>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -95,56 +161,51 @@
           </div>
     </div>
 
+    <div class="container mt-4">
+      {% for q in questions %}
+        <div class="question-card bg-white shadow-sm rounded-md border border-transparent hover-border p-3 p-md-4 mb-4">
+          <div class="row gx-3 gy-3">
+            <!-- Sidebar -->
+            <div class="col-md-2 d-none d-md-flex flex-column text-center">
+              <div class="sidebar-count">{{ q.votes or 0 }}</div>
+              <div class="sidebar-label">votes</div>
+              <div class="sidebar-count text-success mt-2">{{ q.answers or 0 }}</div>
+              <div class="sidebar-label">answers</div>
+              <div class="sidebar-count mt-2">{{ q.views or 0 }}</div>
+              <div class="sidebar-label">views</div>
+            </div>
 
+            <!-- Content -->
+            <div class="col-12 col-md-10">
+              <h6 class="fw-semibold mb-1">
+                <a href="#" class="text-decoration-none text-dark">{{ q.title }}</a>
+              </h6>
 
+              <p class="text-muted small mb-2">
+                {{ q.created.strftime('%b %d, %Y') }} by #{{ q.user.username }}
+              </p>
 
-   
+              <p class="text-muted small mb-2">{{ q.body[:200] }}...</p>
+
+              {% if q.tags %}
+                <div class="mb-2">
+                  {% for tag in q.tags.split(',') %}
+                    <span class="tag">{{ tag.strip() }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <a href="{{ url_for('detail_question', question_id=q.id) }}" class="btn btn-sm btn-outline-primary mt-2">View Question</a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted">No questions have been posted yet.</p>
+      {% endfor %}
+    </div>
+
     
-
-    <!-- Question Card -->
-    <div class="question-card d-flex">
-      <div class="me-4 text-center" style="width: 80px;">
-        <div class="sidebar-count">24</div>
-        <div class="sidebar-label">votes</div>
-        <div class="sidebar-count text-success mt-3">3</div>
-        <div class="sidebar-label">answers</div>
-        <div class="sidebar-count mt-3">1204</div>
-        <div class="sidebar-label">views</div>
-      </div>
-      <div class="flex-grow-1">
-        <h6 class="fw-bold text-dark">How to implement authentication with Next.js and Supabase?</h6>
-        <p class="text-muted">I'm building a Next.js application and want to implement user authentication using Supabase. What's the best approach to handle authentication flows, protected routes, and user sessions?</p>
-        <div class="mb-2">
-          <span class="tag">next.js</span>
-          <span class="tag">authentication</span>
-          <span class="tag">supabase</span>
-          <span class="tag">react</span>
-        </div>
-        <div class="user-info">Sarah Chen • 2 hours ago</div>
-      </div>
-    </div>
-
-    <!-- Another Question -->
-    <div class="question-card d-flex">
-      <div class="me-4 text-center" style="width: 80px;">
-        <div class="sidebar-count">42</div>
-        <div class="sidebar-label">votes</div>
-        <div class="sidebar-count text-success mt-3">5</div>
-        <div class="sidebar-label">answers</div>
-        <div class="sidebar-count mt-3">3102</div>
-        <div class="sidebar-label">views</div>
-      </div>
-      <div class="flex-grow-1">
-        <h6 class="fw-bold text-dark">Understanding useEffect dependencies in React</h6>
-        <p class="text-muted">I'm confused about how the dependency array works in useEffect. Sometimes my component re-renders too often, and other times it doesn't update when I expect it to. Can someone explain?</p>
-        <div class="mb-2">
-          <span class="tag">react</span>
-          <span class="tag">hooks</span>
-          <span class="tag">javascript</span>
-        </div>
-        <div class="user-info">Michael Johnson • 5 hours ago</div>
-      </div>
-    </div>
+    
   </div>
 </body>
 </html>

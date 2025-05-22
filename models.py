@@ -12,9 +12,11 @@ class User(db.Model, UserMixin):
     created = db.Column(db.DateTime, default=datetime.utcnow)
 
     questions = db.relationship('Question', backref='author', lazy=True)
-    answers = db.relationship('Answer', backref='author', lazy=True)
+    answers = db.relationship('Answer', back_populates='user', lazy=True)
     votes = db.relationship('Vote', backref='voter', lazy=True)
     comments = db.relationship('Comment', backref='commenter', lazy=True)
+    questions = db.relationship('Question', back_populates='user')
+
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -24,32 +26,38 @@ class Question(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    tags = db.Column(db.String(255))  
+    image = db.Column(db.String(255), nullable=True)
     vote = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     best_answer = db.Column(db.Integer, db.ForeignKey('answers.id'), nullable=True)
     created = db.Column(db.DateTime, default=datetime.utcnow)
 
-    answers = db.relationship(
-        'Answer',
-        backref='question',
-        lazy=True,
-        foreign_keys='Answer.question_id'  # 👈 disambiguate here
-    )
+    answers = db.relationship('Answer',back_populates='question',lazy=True,foreign_keys='Answer.question_id')
     comments = db.relationship('Comment', backref='question', lazy=True)
     votes = db.relationship('Vote', backref='question', lazy=True)
+    user = db.relationship('User', back_populates='questions')
+
+
 
     def __repr__(self):
         return f"<Question {self.title}>"
+
 
 
 class Answer(db.Model):
     __tablename__ = 'answers'
 
     id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     answer = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
+
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    question = db.relationship('Question', back_populates='answers', foreign_keys=[question_id])
+    user = db.relationship('User', back_populates='answers', lazy=True)
 
     def __repr__(self):
         return f"<Answer {self.id} to Question {self.question_id}>"
