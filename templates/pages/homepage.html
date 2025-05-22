@@ -3,199 +3,651 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DevOverflow</title>
+  <title>QuizzFlask</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body {
-      background-color: white;
-      font-family: 'Segoe UI', sans-serif;
+    a {
+      text-decoration: none !important;
     }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f7fa;
+      color: #1a202c;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      padding: 1rem;
+    }
+
+    /* Header */
+    .header {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Original Styles (Unchanged) */
+    .header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1A32D4;
+      margin: 0;
+    }
+
+    .header .auth-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .profile-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(26, 50, 212, 0.2);
+    }
+
+    .btn-auth {
+      padding: 0.4rem 1rem;
+      font-weight: 500;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .btn-auth-primary {
+      background-color: #1A32D4;
+      color: white;
+      border: none;
+    }
+
+    .btn-auth-primary:hover {
+      background-color: #1527a6;
+      box-shadow: 0 4px 12px rgba(26, 50, 212, 0.3);
+    }
+
+    .btn-auth-outline {
+      border: 1px solid #d1d5db;
+      color: #1a202c;
+    }
+
+    .btn-auth-outline:hover {
+      background-color: #f1f5f9;
+      border-color: #1A32D4;
+      color: #1A32D4;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1rem 0;
+      flex-wrap: nowrap;
+    }
+
+    .search-container {
+      position: relative;
+      flex-grow: 1;
+      max-width: 600px;
+    }
+
+    .search-container::before {
+      content: '🔍';
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .search-bar input {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      font-size: 0.85rem;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .search-bar input:focus {
+      border-color: #1A32D4;
+      box-shadow: 0 0 0 3px rgba(26, 50, 212, 0.1);
+      outline: none;
+    }
+
+    .btn-ask {
+      background: linear-gradient(135deg, #1A32D4 0%, #2b4aff 100%);
+      color: white;
+      padding: 0.5rem 1.25rem;
+      font-weight: 500;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      border: none;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-ask:hover {
+      background: linear-gradient(135deg, #1527a6 0%, #1a32d4 100%);
+      box-shadow: 0 4px 12px rgba(26, 50, 212, 0.3);
+    }
+
+    /* Filters */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .filter-bar h5 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .filter-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      background-color: white;
+      color: #1a202c;
+      transition: all 0.3s ease;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .filter-btn:hover {
+      background-color: #1A32D4;
+      color: white;
+      border-color: #1A32D4;
+    }
+
+    /* Question Card */
+    .question-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #1A32D4;
+    }
+
+    .sidebar-count {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1A32D4;
+    }
+
+    .sidebar-label {
+      font-size: 0.7rem;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .question-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-title a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .question-title a:hover {
+      color: #1A32D4;
+    }
+
+    .question-meta {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-body {
+      font-size: 0.85rem;
+      color: #4b5563;
+      margin-bottom: 0.5rem;
+    }
+
     .tag {
       background-color: #e8ebf8;
       color: #1A32D4;
-      padding: 5px 12px;
+      padding: 0.3rem 0.6rem;
       border-radius: 20px;
-      font-size: 0.875rem;
-      margin-right: 0.3rem;
+      font-size: 0.75rem;
+      margin-right: 0.4rem;
+      margin-bottom: 0.4rem;
+      transition: background-color 0.3s ease;
+      display: inline-block;
     }
-    .question-card {
-      background-color: #fff;
+
+    .tag:hover {
+      background-color: #d1d9f5;
+    }
+
+    .btn-view {
+      font-size: 0.8rem;
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #1A32D4;
+      color: #1A32D4;
+      transition: all 0.3s ease;
+    }
+
+    .btn-view:hover {
+      background-color: #1A32D4;
+      color: white;
+    }
+
+    /* Responsive Design */
+    @media (min-width: 576px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      .header h2 {
+        font-size: 1.75rem;
+      }
+
+      .profile-img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .btn-auth {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.9rem;
+      }
+
+      .search-bar input {
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        font-size: 0.9rem;
+      }
+
+      .btn-ask {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+      }
+
+      .filter-bar h5 {
+        font-size: 1.25rem;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+
+      .question-card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .sidebar-count {
+        font-size: 1.1rem;
+      }
+
+      .sidebar-label {
+        font-size: 0.75rem;
+      }
+
+      .question-title {
+        font-size: 1.1rem;
+      }
+
+      .question-body {
+        font-size: 0.9rem;
+      }
+
+      .tag {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.75rem;
+      }
+
+      .btn-view {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .header {
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .header .auth-section {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .search-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .btn-ask {
+        width: 100%;
+        text-align: center;
+      }
+
+      .filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .filter-bar .d-flex {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .question-card .row {
+        flex-direction: column;
+      }
+
+      .question-card .col-md-2 {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        justify-content: flex-start;
+        margin-bottom: 0.5rem;
+      }
+
+      .question-card .col-md-2 > div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .header h2 {
+        font-size: 1.25rem;
+      }
+
+      .btn-auth {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        min-width: 70px;
+      }
+
+      .search-bar input {
+        padding: 0.4rem 0.8rem 0.4rem 2.2rem;
+        font-size: 0.8rem;
+      }
+
+      .search-container::before {
+        font-size: 0.9rem;
+      }
+
+      .btn-ask {
+        font-size: 0.8rem;
+        padding: 0.4rem 1rem;
+      }
+
+      .filter-btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        min-width: 60px;
+      }
+
+      .question-title {
+        font-size: 0.95rem;
+      }
+
+      .question-body {
+        font-size: 0.8rem;
+      }
+
+      .tag {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      .btn-view {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.8rem;
+      }
+    }
+
+    /* Modal Styles for Search Popup */
+    .search-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #ffffff;
       border-radius: 12px;
       padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 600px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
-    .sidebar-count {
-      text-align: center;
-      font-weight: bold;
+
+    .close-button {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      font-size: 1.5rem;
+      color: #6b7280;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close-button:hover {
       color: #1A32D4;
-      font-size: 1.1rem;
     }
-    .sidebar-label {
-      font-size: 0.8rem;
-      color: #888;
+
+    .modal-search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
-    .user-info {
-      font-size: 0.875rem;
-      color: #666;
+
+    .modal-search-input {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.6rem 1rem 0.6rem 2.5rem;
+      font-size: 0.9rem;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      width: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 0.75rem center;
+      background-size: 1.2rem;
     }
-    .btn-primary {
-      background-color: #1A32D4;
+
+    .modal-search-input:focus {
+      border-color: #1A32D4;
+      box-shadow: 0 0 0 3px rgba(26, 50, 212, 0.1);
+      outline: none;
+    }
+
+    .modal-search-button {
+      background: linear-gradient(135deg, #1A32D4 0%, #2b4aff 100%);
+      color: white;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+      border-radius: 10px;
+      font-size: 0.9rem;
       border: none;
-    }
-    .btn-primary:hover {
-      background-color: #1527a6;
-    }
-    .btn-outline-dark {
-      border-radius: 8px;
-    }
-    .btn-dark {
-      background-color: #1A32D4;
-      border: none;
-      border-radius: 8px;
-    }
-    .btn-dark:hover {
-      background-color: #1527a6;
-    }
-  
-    .profile-img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #ddd;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease; /* Smooth hover effect */
-  }
-
-  .profile-img:hover {
-    transform: scale(1.1); /* Slight zoom on hover */
-  }
-
-  .question-card {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 16px;
-  }
-
-  .hover-border:hover {
-    border-color: #1A32D4 !important;
-    box-shadow: 0 6px 16px rgba(26, 50, 212, 0.06);
-  }
-
-  .sidebar-count {
-    font-weight: bold;
-    font-size: 1rem;
-    color: #1A32D4;
-  }
-
-  .sidebar-label {
-    font-size: 0.75rem;
-    color: #666;
-  }
-
-  .tag {
-    background-color: #e8ebf8;
-    color: #1A32D4;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    margin-right: 6px;
-  }
-
-  @media (max-width: 576px) {
-    .sidebar-count {
-    font-size: 0.95rem;
-  }
-  .sidebar-label {
-    font-size: 0.7rem;
-  }
-
-    .tag {
-      font-size: 0.65rem;
-      padding: 3px 8px;
+      transition: all 0.3s ease;
+      text-align: center;
     }
 
-    .question-card {
-      padding: 1rem;
+    .modal-search-button:hover {
+      background: linear-gradient(135deg, #1527a6 0%, #1a32d4 100%);
+      box-shadow: 0 4px 12px rgba(26, 50, 212, 0.3);
     }
-  }
 
+    .search-results {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+      min-height: 100px;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-primary">QuizzFlask</h2>
-      
-        <div class="d-flex gap-2">
-          {% if current_user.is_authenticated %}
-            <!-- Logged in: show profile image or icon -->
-            <div>
-              <a href="{{ url_for('profile', user_id=current_user.id) }}">
-                <img src="{{ url_for('static', filename=current_user.avatar or 'uploads/avatars/default.png') }}" 
-                     class="profile-img" alt="Profile Picture">
-              </a>
+  <div class="container">
+    <!-- Header (Updated) -->
+    <header class="header">
+      <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="{{ url_for('home') }}" class="text-2xl font-bold text-blue-600">QuizzFlask</a>
+
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-md mx-4">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search questions..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-colors cursor-pointer"
+              onclick="openSearchModal()"
+              readonly
+            />
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <!-- Search Modal -->
+          <div class="search-modal" id="searchModal">
+            <div class="modal-content">
+              <span class="close-button" onclick="closeSearchModal()">×</span>
+              <div class="modal-search-container">
+                <input
+                  type="text"
+                  class="modal-search-input"
+                  placeholder="Type your search query..."
+                  autofocus
+                />
+                <button class="modal-search-button" onclick="performSearch()">Search</button>
+                <div class="search-results">
+                  <p>Search results will be displayed here...</p>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Navigation and Auth -->
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Questions</a>
+          <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Tags</a>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('profile', user_id=current_user.id) }}">
+              <img src="{{ url_for('static', filename=current_user.avatar or 'uploads/avatars/default.png') }}" class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="Profile Picture">
+            </a>
+            <a href="{{ url_for('post_question') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Ask Question</a>
           {% else %}
-            <!-- Not logged in: show login/signup -->
-            <a href="{{ url_for('login') }}" class="btn btn-outline-dark">Log in</a>
-            <a href="{{ url_for('register') }}" class="btn btn-dark">Sign up</a>
+            <a href="{{ url_for('login') }}" class="text-gray-600 hover:text-blue-600 transition-colors">Log in</a>
+            <a href="{{ url_for('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign up</a>
           {% endif %}
         </div>
-    </div>
-      
-    <!-- Search Bar -->
-    <div class="mb-4 d-flex justify-content-between align-items-center ">
-      <input type="text" class="form-control rounded-sm shadow-sm px-4 p-3" placeholder="🔍 Search questions..." />
-      <a href="{{ url_for('post_question') }}" class="btn btn-primary ms-2">Ask Question</a>
-    </div>
+      </div>
+    </header>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h5 class="fw-bold mb-3">Top Questions</h5>
-        <div class="d-flex gap-2 mb-4">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill">Newest</button>
-            <button class="btn btn-outline-secondary btn-sm rounded-pill">Active</button>
-            <button class="btn btn-outline-secondary btn-sm rounded-pill">Unanswered</button>
-          </div>
+    
+    <!-- Filters (Unchanged) -->
+    <div class="filter-bar mt-10">
+      <h5>Top Questions</h5>
+      <div class="d-flex gap-2">
+        <button class="filter-btn">Newest</button>
+        <button class="filter-btn">Active</button>
+        <button class="filter-btn">Unanswered</button>
+      </div>
     </div>
 
-    <div class="container mt-4">
+    <!-- Questions (Unchanged) -->
+    <div class="mt-3">
       {% for q in questions %}
-        <div class="question-card bg-white shadow-sm rounded-md border border-transparent hover-border p-3 p-md-4 mb-4">
-          <div class="row gx-3 gy-3">
+        <div class="question-card">
+          <div class="row gx-3 gy-2">
             <!-- Sidebar -->
-            <div class="col-md-2 d-none d-md-flex flex-column text-center">
-              <div class="sidebar-count">{{ q.votes or 0 }}</div>
-              <div class="sidebar-label">votes</div>
-              <div class="sidebar-count text-success mt-2">{{ q.answers or 0 }}</div>
-              <div class="sidebar-label">answers</div>
-              <div class="sidebar-count mt-2">{{ q.views or 0 }}</div>
-              <div class="sidebar-label">views</div>
+            <div class="col-md-2 d-flex flex-row flex-md-column text-center">
+              <div>
+                <div class="sidebar-count">{{ q.votes or 0 }}</div>
+                <div class="sidebar-label">votes</div>
+              </div>
+              <div>
+                <div class="sidebar-count text-success">{{ q.answers or 0 }}</div>
+                <div class="sidebar-label">answers</div>
+              </div>
+              <div>
+                <div class="sidebar-count">{{ q.views or 0 }}</div>
+                <div class="sidebar-label">views</div>
+              </div>
             </div>
 
             <!-- Content -->
             <div class="col-12 col-md-10">
-              <h6 class="fw-semibold mb-1">
-                <a href="#" class="text-decoration-none text-dark">{{ q.title }}</a>
+              <h6 class="question-title">
+                <a href="#" class="text-decoration-none">{{ q.title }}</a>
               </h6>
-
-              <p class="text-muted small mb-2">
+              <p class="question-meta">
                 {{ q.created.strftime('%b %d, %Y') }} by #{{ q.user.username }}
               </p>
-
-              <p class="text-muted small mb-2">{{ q.body[:200] }}...</p>
-
+              <p class="question-body">{{ q.body[:200] }}...</p>
               {% if q.tags %}
-                <div class="mb-2">
+                <div class="mb-2 d-flex flex-wrap gap-1">
                   {% for tag in q.tags.split(',') %}
                     <span class="tag">{{ tag.strip() }}</span>
                   {% endfor %}
                 </div>
               {% endif %}
-
-              <a href="{{ url_for('detail_question', question_id=q.id) }}" class="btn btn-sm btn-outline-primary mt-2">View Question</a>
+              <a href="{{ url_for('detail_question', question_id=q.id) }}" class="btn btn-view">View Question</a>
             </div>
           </div>
         </div>
@@ -203,9 +655,59 @@
         <p class="text-muted">No questions have been posted yet.</p>
       {% endfor %}
     </div>
-
-    
-    
   </div>
+
+  <script>
+    // Open the search modal
+    function openSearchModal() {
+      document.getElementById('searchModal').style.display = 'flex';
+    }
+
+    // Close the search modal
+    function closeSearchModal() {
+      document.getElementById('searchModal').style.display = 'none';
+    }
+
+    // Placeholder for search functionality
+    const searchInput = document.querySelector('.modal-search-input');
+  const resultsContainer = document.querySelector('.search-results');
+
+  searchInput.addEventListener('input', function () {
+    const query = this.value.trim();
+
+    if (query.length < 2) {
+      resultsContainer.innerHTML = "<p>Start typing to search questions...</p>";
+      return;
+    }
+
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.results.length === 0) {
+          resultsContainer.innerHTML = "<p class='text-muted'>No matching questions found.</p>";
+        } else {
+          const html = data.results.map(q => `
+            <div class="p-2 border-b hover:bg-gray-100">
+              <a href="/detail_question/${q.id}" class="text-blue-600 font-medium">${q.title}</a>
+              <p class="text-sm text-gray-600">${q.body.slice(0, 80)}...</p>
+            </div>
+          `).join('');
+          resultsContainer.innerHTML = html;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        resultsContainer.innerHTML = "<p class='text-danger'>Error fetching results.</p>";
+      });
+  });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('searchModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+  </script>
 </body>
 </html>

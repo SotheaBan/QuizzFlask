@@ -1,4 +1,4 @@
-from flask import Flask,render_template,redirect,url_for,flash,abort
+from flask import Flask,render_template,redirect,url_for,flash,abort,request,jsonify
 from extensions import db, login_manager, csrf
 from models import User,Question,Answer
 from forms import RegistrationForm,LoginForm,EditProfileForm,QuestionForm,AnswerForm
@@ -13,7 +13,7 @@ from markdown2 import markdown
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hello123'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost/quizz'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin1:admin@localhost/quizzdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 migrate = Migrate(app, db)
 # Initialize extensions
@@ -206,6 +206,30 @@ def detail_question(question_id):
         return redirect(url_for('home', question_id=question.id))
 
     return render_template('pages/detail_question.html', question=question, answers=answers, form=form)
+
+@app.route('/api/search')
+def api_search():
+    q = request.args.get('q', '').strip()
+
+    if not q:
+        return jsonify(results=[])
+
+    # Check if it's a tag-based search (e.g., tag:flask)
+    if q.lower().startswith("tag:"):
+        tag = q[4:].strip()
+        results = Question.query.filter(Question.tags.ilike(f"%{tag}%")).limit(10).all()
+    else:
+        results = Question.query.filter(
+            (Question.title.ilike(f"%{q}%")) |
+            (Question.tags.ilike(f"%{q}%"))
+        ).limit(10).all()
+
+    return jsonify(results=[{
+        'id': q.id,
+        'title': q.title,
+        'body': q.body
+    } for q in results])
+
 
 
 if __name__ == '__main__':

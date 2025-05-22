@@ -4,234 +4,204 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>User Profile - DevOverflow</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
-      background-color: #f9f9f9;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
     }
     .card-custom {
-      background-color: #fff;
+      background-color: #ffffff;
       border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
-    .tag {
-      background-color: #e8ebf8;
-      color: #1A32D4;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      margin-right: 0.3rem;
+    .modal-content {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .modal-footer {
+      border-top: none;
+      padding-top: 0;
     }
     .profile-img {
       width: 100px;
       height: 100px;
-      border-radius: 100px;
-      background-color: #ddd;
-      display: inline-block;
-      background-image: url('https://via.placeholder.com/100');
-      background-size: cover;
-      background-position: center;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    .badge-outline {
-      border-radius: 20px;
-      padding: 2px 10px;
-      font-size: 0.75rem;
-      margin-right: 5px;
-    }
-    .vote-count {
-      font-weight: bold;
-      color: #1A32D4;
-    }
-    .reputation-box {
-      text-align: right;
-    }
-    .profile-img {
-    width: 100px; /* Adjust the size as needed */
-    height: 100px;
-    border-radius: 50%; /* Circular shape */
-    object-fit: cover; /* Ensure the image fits within the circle */
-    border: 2px solid #ddd; /* Optional: Add a border */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
-  }
   </style>
 </head>
-<body>
-  <div class="container py-5">
+<body class="bg-gray-50">
+  <div class="container max-w-5xl mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <a href="{{ url_for('home') }}" class="inline-flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"/>
+      </svg>
+    </a>
 
-    <div>
-        <a href="{{ url_for('home') }}" class="btn btn-primary width- mb-4" style="width: 50px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"/>
-            </svg>
-        </a>
-    </div>
-    
     <!-- Profile Header Row -->
-    <div class="row mb-4">
+    <div class="flex flex-col md:flex-row gap-6 mb-6">
       <!-- Profile Info Left -->
-      <div class="col-md-6 d-flex align-items-center gap-3">
+      <div class="flex items-center gap-4">
+        <img src="{{ url_for('static', filename=user.avatar or 'uploads/avatars/default.png') }}" 
+             class="profile-img" alt="Profile Picture">
         <div>
-          <img src="{{ url_for('static', filename=user.avatar or 'uploads/avatars/default.png') }}" 
-              class="profile-img" alt="Profile Picture">
-        </div>
-        
-        <div>
-            <h4 class="fw-bold mb-0">{{user.username}}</h4>
-            <div class="text-muted">{{ user.email.split('@')[0] }}</div>
-            <div class="text-muted small">{{ user.created.strftime('%Y-%m-%d') }}</div>
-       
-            <!-- Trigger Button -->
-            {% if current_user.id == user.id %}
-            <button type="button" class="btn btn-outline-secondary mt-3" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+          <h4 class="text-xl font-bold text-gray-900">{{ user.username }}</h4>
+          <div class="text-gray-500 text-sm">{{ user.email.split('@')[0] }}</div>
+          <div class="text-gray-500 text-xs">Joined {{ user.created.strftime('%Y-%m-%d') }}</div>
+          {% if current_user.id == user.id %}
+            <div class="mt-3 flex gap-3">
+              <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                 Edit Profile
-            </button>
-            
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary mt-3">Logout</a>
-
-            {% endif %}
-            <!-- Modal -->
-            <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                <div class="modal-content">
-                  <form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_profile', user_id=user.id) }}">
-                    {{ form.hidden_tag() }}
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-            
-                    <div class="modal-body">
-                        <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control") }}
-                        {% for error in form.username.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                        </div>
-            
-                        <div class="mb-3">
-                          {{ form.avatar.label(class="form-label") }}
-                          {{ form.avatar(class="form-control") }}
-                          {% for error in form.avatar.errors %}
-                              <div class="text-danger small">{{ error }}</div>
-                          {% endfor %}
-                      </div>
-                    </div>
-            
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                    </form>
-                </div>
-                </div>
+              </button>
+              <a href="{{ url_for('logout') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">Logout</a>
             </div>
+          {% endif %}
         </div>
       </div>
 
       <!-- Reputation Right -->
-      <div class="col-md-6 reputation-box d-flex flex-column align-items-end justify-content-center">
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <span style="font-size: 1.2rem;">🏆</span>
-          <span class="fw-bold fs-5 text-dark">24,783</span>
+      <div class="flex-1 flex flex-col items-end justify-center">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🏆</span>
+          <span class="text-2xl font-bold text-gray-900">24,783</span>
         </div>
-        <div class="text-muted mb-2" style="font-size: 0.9rem;">reputation</div>
-        <div>
-          <span class="badge bg-warning text-dark badge-outline">8 gold</span>
-          <span class="badge bg-secondary text-light badge-outline">42 silver</span>
-          <span class="badge bg-danger badge-outline">96 bronze</span>
+        <div class="text-gray-500 text-sm mb-2">Reputation</div>
+        <div class="flex gap-2">
+          <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full">8 gold</span>
+          <span class="bg-gray-100 text-gray-800 text-xs font-medium px-3 py-1 rounded-full">42 silver</span>
+          <span class="bg-red-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full">96 bronze</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal (Unchanged Logic) -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_profile', user_id=user.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="modal-header">
+              <h5 class="modal-title text-xl font-bold text-gray-900" id="editProfileModalLabel">Edit Profile</h5>
+              <button type="button" class="text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body p-6">
+              <div class="mb-4">
+                {{ form.username.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.username(class="w-full rounded-lg border-gray-300 focus:ring-blue-600 focus:border-blue-600 p-2") }}
+                {% for error in form.username.errors %}
+                  <div class="text-red-600 text-sm mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="mb-4">
+                {{ form.avatar.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.avatar(class="w-full rounded-lg border-gray-300 focus:ring-blue-600 focus:border-blue-600 p-2") }}
+                {% for error in form.avatar.errors %}
+                  <div class="text-red-600 text-sm mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="modal-footer flex justify-end gap-3">
+              <button type="button" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors" data-bs-dismiss="modal">Cancel</button>
+              {{ form.submit(class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors") }}
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
     <!-- Content Row -->
-    <div class="row">
+    <div class="flex flex-col md:flex-row gap-6">
       <!-- Left Column: About Me + Activity Summary -->
-      <div class="col-md-4">
-        <div class="card-custom">
-          <h6 class="fw-bold mb-2">About Me</h6>
-          <p class="text-muted mb-0">
+      <div class="md:w-1/3">
+        <div class="card-custom p-5 mb-6">
+          <h6 class="text-lg font-bold text-gray-900 mb-3">About Me</h6>
+          <p class="text-gray-600 text-sm">
             Full-stack developer specializing in React and Node.js. I enjoy solving complex problems and contributing to open-source projects.
           </p>
         </div>
-
-        <div class="card-custom">
-          <h6 class="fw-bold mb-3">Activity Summary</h6>
-          <div class="d-flex justify-content-between">
-            <span>Questions</span><span>47</span>
+        <div class="card-custom p-5">
+          <h6 class="text-lg font-bold text-gray-900 mb-3">Activity Summary</h6>
+          <div class="flex justify-between text-sm text-gray-600 mb-2">
+            <span>Questions</span><span class="font-medium">47</span>
           </div>
-          <div class="d-flex justify-content-between">
-            <span>Answers</span><span>328</span>
+          <div class="flex justify-between text-sm text-gray-600 mb-2">
+            <span>Answers</span><span class="font-medium">328</span>
           </div>
-          <div class="d-flex justify-content-between">
-            <span>People reached</span><span>~1.4m</span>
+          <div class="flex justify-between text-sm text-gray-600">
+            <span>People reached</span><span class="font-medium">~1.4m</span>
           </div>
         </div>
-
       </div>
 
-      <!-- Right Column: Top Questions in Single Card -->
-      <div class="col-md-8">
-        <div class="card-custom">
-          <h6 class="fw-bold mb-3">Top Questions</h6>
-          <p class="text-muted small">Highest voted questions asked by Katherine</p>
+      <!-- Right Column: Top Questions -->
+      <div class="md:w-2/3">
+        <div class="card-custom p-5">
+          <h6 class="text-lg font-bold text-gray-900 mb-3">Top Questions</h6>
+          <p class="text-gray-500 text-sm mb-4">Highest voted questions asked by {{ user.username }}</p>
 
           <!-- Question 1 -->
           <div class="mb-4">
-            <a href="#" class="fw-semibold text-decoration-none text-primary">
+            <a href="#" class="text-blue-600 font-semibold hover:underline">
               How to properly implement useEffect cleanup in React?
             </a>
-            <div class="mt-2 mb-2">
-              <span class="tag">react</span>
-              <span class="tag">hooks</span>
-              <span class="tag">javascript</span>
+            <div class="flex flex-wrap gap-2 my-2">
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">react</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">hooks</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">javascript</span>
             </div>
-            <div class="text-muted small">
-              <span class="vote-count">124</span> votes • 8 answers • 12k views
+            <div class="text-gray-500 text-sm">
+              <span class="text-blue-600 font-medium">124</span> votes • 8 answers • 12k views
             </div>
           </div>
 
           <!-- Question 2 -->
           <div class="mb-4">
-            <a href="#" class="fw-semibold text-decoration-none text-primary">
+            <a href="#" class="text-blue-600 font-semibold hover:underline">
               Understanding TypeScript generics with React components
             </a>
-            <div class="mt-2 mb-2">
-              <span class="tag">typescript</span>
-              <span class="tag">react</span>
-              <span class="tag">generics</span>
+            <div class="flex flex-wrap gap-2 my-2">
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">typescript</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">react</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">generics</span>
             </div>
-            <div class="text-muted small">
-              <span class="vote-count">98</span> votes • 5 answers • 8.5k views
+            <div class="text-gray-500 text-sm">
+              <span class="text-blue-600 font-medium">98</span> votes • 5 answers • 8.5k views
             </div>
           </div>
 
           <!-- Question 3 -->
           <div class="mb-2">
-            <a href="#" class="fw-semibold text-decoration-none text-primary">
+            <a href="#" class="text-blue-600 font-semibold hover:underline">
               Best practices for handling API errors in Next.js
             </a>
-            <div class="mt-2 mb-2">
-              <span class="tag">next.js</span>
-              <span class="tag">api</span>
-              <span class="tag">error-handling</span>
+            <div class="flex flex-wrap gap-2 my-2">
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">next.js</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">api</span>
+              <span class="inline-block bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">error-handling</span>
             </div>
-            <div class="text-muted small">
-              <span class="vote-count">87</span> votes • 6 answers • 7.2k views
+            <div class="text-gray-500 text-sm">
+              <span class="text-blue-600 font-medium">87</span> votes • 6 answers • 7.2k views
             </div>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 
-  
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
