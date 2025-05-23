@@ -1,0 +1,42 @@
+{% for q in questions %}
+  <div class="question-card">
+    <div class="row gx-3 gy-2">
+      <!-- Sidebar -->
+      <div class="col-md-2 d-flex flex-row flex-md-column text-center">
+        <div>
+          <div class="sidebar-count">{{ q.votes|length }}</div>
+          <div class="sidebar-label">votes</div>
+        </div>
+        <div>
+          <div class="sidebar-count text-success">{{ q.answers|length }}</div>
+          <div class="sidebar-label">answers</div>
+        </div>
+        <div>
+          <div class="sidebar-count">{{ q.views|length }}</div>
+          <div class="sidebar-label">views</div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="col-12 col-md-10">
+        <h6 class="question-title">
+          <a href="#" class="text-decoration-none">{{ q.title }}</a>
+        </h6>
+        <p class="question-meta">
+          {{ q.created.strftime('%b %d, %Y') }} by #{{ q.user.username }}
+        </p>
+        <p class="question-body">{{ q.body[:200] }}...</p>
+        {% if q.tags %}
+          <div class="mb-2 d-flex flex-wrap gap-1">
+            {% for tag in q.tags.split(',') %}
+              <span class="tag">{{ tag.strip() }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <a href="{{ url_for('detail_question', question_id=q.id) }}" class="btn btn-view">View Question</a>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <p class="text-muted">No questions have been posted yet.</p>
+{% endfor %}

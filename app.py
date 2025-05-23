@@ -1,4 +1,4 @@
-from flask import Flask,render_template,redirect,url_for,flash,abort
+from flask import Flask,render_template,redirect,url_for,flash,abort,request,jsonify
 from extensions import db, login_manager, csrf
 from models import User,Question,Answer
 from forms import RegistrationForm,LoginForm,EditProfileForm,QuestionForm,AnswerForm
@@ -40,11 +40,16 @@ from markdown2 import markdown
 def markdown_filter(text):
     return markdown(text)
 
-@app.route('/')
+@app.route("/")
 def home():
-    user = current_user 
-    questions = Question.query.order_by(Question.created.desc()).all()
-    return render_template('pages/homepage.html',user=user,questions=questions)
+    filter_type = request.args.get("filter", "newest")  # default is 'newest'
+
+    if filter_type == "unanswered":
+        questions = Question.query.filter(~Question.answers.any()).order_by(Question.created.desc()).all()
+    else:  # default to newest
+        questions = Question.query.order_by(Question.created.desc()).all()
+
+    return render_template("pages/homepage.html", questions=questions, filter=filter_type)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -91,8 +96,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        # 4. Flash + redirect
-        flash("Account created successfully! You can now log in.", "success")
+        # 4. Log in the user automatically
+        login_user(new_user)
+
+        # 5. Flash + redirect
+        flash("Account created successfully! You are now logged in.", "success")
         return redirect(url_for('home'))  
 
     return render_template('authentication/register.html', form=form)
@@ -207,6 +215,40 @@ def detail_question(question_id):
 
     return render_template('pages/detail_question.html', question=question, answers=answers, form=form)
 
+@app.route('/api/search')
+def api_search():
+    q = request.args.get('q', '').strip()
+
+    if not q:
+        return jsonify(results=[])
+
+    # Check if it's a tag-based search (e.g., tag:flask)
+    if q.lower().startswith("tag:"):
+        tag = q[4:].strip()
+        results = Question.query.filter(Question.tags.ilike(f"%{tag}%")).limit(10).all()
+    else:
+        results = Question.query.filter(
+            (Question.title.ilike(f"%{q}%")) |
+            (Question.tags.ilike(f"%{q}%"))
+        ).limit(10).all()
+
+    return jsonify(results=[{
+        'id': q.id,
+        'title': q.title,
+        'body': q.body
+    } for q in results])
+
+@app.route("/filter-questions")
+def filter_questions():
+    filter_type = request.args.get("filter", "newest")
+
+    if filter_type == "unanswered":
+        questions = Question.query.filter(~Question.answers.any()).order_by(Question.created.desc()).all()
+    else:
+        questions = Question.query.order_by(Question.created.desc()).all()
+
+    return render_template("components/question_cards.html", questions=questions)
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
