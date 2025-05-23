@@ -13,7 +13,7 @@ from markdown2 import markdown
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hello123'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin1:admin@localhost/quizzdb'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost/quizz'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 migrate = Migrate(app, db)
 # Initialize extensions
@@ -40,11 +40,16 @@ from markdown2 import markdown
 def markdown_filter(text):
     return markdown(text)
 
-@app.route('/')
+@app.route("/")
 def home():
-    user = current_user 
-    questions = Question.query.order_by(Question.created.desc()).all()
-    return render_template('pages/homepage.html',user=user,questions=questions)
+    filter_type = request.args.get("filter", "newest")  # default is 'newest'
+
+    if filter_type == "unanswered":
+        questions = Question.query.filter(~Question.answers.any()).order_by(Question.created.desc()).all()
+    else:  # default to newest
+        questions = Question.query.order_by(Question.created.desc()).all()
+
+    return render_template("pages/homepage.html", questions=questions, filter=filter_type)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -91,8 +96,11 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        # 4. Flash + redirect
-        flash("Account created successfully! You can now log in.", "success")
+        # 4. Log in the user automatically
+        login_user(new_user)
+
+        # 5. Flash + redirect
+        flash("Account created successfully! You are now logged in.", "success")
         return redirect(url_for('home'))  
 
     return render_template('authentication/register.html', form=form)
@@ -230,7 +238,17 @@ def api_search():
         'body': q.body
     } for q in results])
 
+@app.route("/filter-questions")
+def filter_questions():
+    filter_type = request.args.get("filter", "newest")
+
+    if filter_type == "unanswered":
+        questions = Question.query.filter(~Question.answers.any()).order_by(Question.created.desc()).all()
+    else:
+        questions = Question.query.order_by(Question.created.desc()).all()
+
+    return render_template("components/question_cards.html", questions=questions)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -44,13 +44,27 @@
 
     .header .auth-section {
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 0.5rem;
     }
 
+    .header .auth-section a {
+      display: block;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1a202c;
+      text-decoration: none;
+    }
+
+    .header .auth-section a:hover {
+      color: #1A32D4;
+    }
+
     .profile-img {
-      width: 40px;
-      height: 40px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid #e2e8f0;
@@ -58,8 +72,8 @@
     }
 
     .profile-img:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(26, 50, 212, 0.2);
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(26, 50, 212, 0.3);
     }
 
     .btn-auth {
@@ -584,11 +598,9 @@
 
         <!-- Navigation and Auth -->
         <div class="flex items-center gap-4">
-          <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Questions</a>
-          <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Tags</a>
           {% if current_user.is_authenticated %}
             <a href="{{ url_for('profile', user_id=current_user.id) }}">
-              <img src="{{ url_for('static', filename=current_user.avatar or 'uploads/avatars/default.png') }}" class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="Profile Picture">
+              <img src="{{ url_for('static', filename=current_user.avatar or 'uploads/avatars/default.png') }}" class="w-14 h-14 rounded-full object-cover border border-gray-200" alt="Profile Picture">
             </a>
             <a href="{{ url_for('post_question') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Ask Question</a>
           {% else %}
@@ -604,57 +616,17 @@
     <div class="filter-bar mt-10">
       <h5>Top Questions</h5>
       <div class="d-flex gap-2">
-        <button class="filter-btn">Newest</button>
-        <button class="filter-btn">Active</button>
-        <button class="filter-btn">Unanswered</button>
+        <button class="filter-btn" data-filter="newest">Newest</button>
+        <button class="filter-btn" data-filter="unanswered">Unanswered</button>
       </div>
     </div>
+    
 
     <!-- Questions (Unchanged) -->
-    <div class="mt-3">
-      {% for q in questions %}
-        <div class="question-card">
-          <div class="row gx-3 gy-2">
-            <!-- Sidebar -->
-            <div class="col-md-2 d-flex flex-row flex-md-column text-center">
-              <div>
-                <div class="sidebar-count">{{ q.votes or 0 }}</div>
-                <div class="sidebar-label">votes</div>
-              </div>
-              <div>
-                <div class="sidebar-count text-success">{{ q.answers or 0 }}</div>
-                <div class="sidebar-label">answers</div>
-              </div>
-              <div>
-                <div class="sidebar-count">{{ q.views or 0 }}</div>
-                <div class="sidebar-label">views</div>
-              </div>
-            </div>
-
-            <!-- Content -->
-            <div class="col-12 col-md-10">
-              <h6 class="question-title">
-                <a href="#" class="text-decoration-none">{{ q.title }}</a>
-              </h6>
-              <p class="question-meta">
-                {{ q.created.strftime('%b %d, %Y') }} by #{{ q.user.username }}
-              </p>
-              <p class="question-body">{{ q.body[:200] }}...</p>
-              {% if q.tags %}
-                <div class="mb-2 d-flex flex-wrap gap-1">
-                  {% for tag in q.tags.split(',') %}
-                    <span class="tag">{{ tag.strip() }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-              <a href="{{ url_for('detail_question', question_id=q.id) }}" class="btn btn-view">View Question</a>
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <p class="text-muted">No questions have been posted yet.</p>
-      {% endfor %}
+    <div class="mt-3" id="question-list">
+      {% include "components/question_cards.html" %}
     </div>
+    
   </div>
 
   <script>
@@ -708,6 +680,21 @@
         modal.style.display = 'none';
       }
     };
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const filter = this.getAttribute("data-filter");
+
+      fetch(`/filter-questions?filter=${filter}`)
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById("question-list").innerHTML = html;
+        })
+        .catch(err => {
+          console.error("Error loading questions:", err);
+        });
+    });
+  });
   </script>
 </body>
 </html>
